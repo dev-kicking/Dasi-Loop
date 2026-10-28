@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dasi Loop"
+  short_description: "Implement, verify, and improve with evidence"
+  default_prompt: "Use $dasi-loop to complete this task with acceptance criteria, bounded retries, and recorded verification."

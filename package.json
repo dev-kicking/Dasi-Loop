@@ -1,11 +1,34 @@
 {
   "name": "dasi-loop",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A portable, evidence-driven development loop skill",
   "license": "MIT",
   "type": "module",
-  "bin": { "dasi-loop": "bin/install.mjs" },
-  "files": ["bin", "skills", "README.md", "LICENSE"],
-  "scripts": { "test": "node --test test/*.test.mjs" },
-  "engines": { "node": ">=18" }
+  "bin": {
+    "dasi-loop": "bin/install.mjs"
+  },
+  "files": [
+    "bin",
+    "skills",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dev-kicking/loop-engineering-skill.git"
+  },
+  "homepage": "https://github.com/dev-kicking/loop-engineering-skill#readme",
+  "keywords": [
+    "agent-skills",
+    "loop-engineering",
+    "codex",
+    "claude-code",
+    "dasi-loop"
+  ]
 }
