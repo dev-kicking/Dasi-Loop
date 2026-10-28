@@ -1,6 +1,6 @@
-# Loop engineering skill
+# Dasi Loop
 
-An installable skill for a bounded implementation → verification → improvement loop. It works with the project's existing instructions and verification commands; no root-level YAML or project configuration is required.
+“Dasi” (다시) means “again” in Korean. Dasi Loop is an installable skill for a bounded implementation → verification → improvement loop. It works with the project's existing instructions and verification commands; no root-level YAML or project configuration is required.
 
 ## Install
 
@@ -8,8 +8,8 @@ Node.js 18+ is required. From this package directory, install for the current us
 
 ```sh
 npm install --global .
-loop-engineering-skill install --agent codex
-# or: loop-engineering-skill install --agent claude
+dasi-loop install --agent codex
+# or: dasi-loop install --agent claude
 ```
 
 To install from the GitHub repository, clone it first:
@@ -18,7 +18,7 @@ To install from the GitHub repository, clone it first:
 git clone https://github.com/dev-kicking/loop-engineering-skill.git
 cd loop-engineering-skill
 npm install --global .
-loop-engineering-skill install --agent codex
+dasi-loop install --agent codex
 ```
 
 Use `--scope project` to install for only the current project. User installations go to `~/.codex/skills` or `~/.claude/skills`; project installations go to `.agents/skills` or `.claude/skills`. The installer refuses to overwrite an existing installation. Restart the agent session if it does not discover the skill immediately.
@@ -27,9 +27,9 @@ For a packaged tarball, replace `.` with its path. After publishing to an npm re
 
 ## Use
 
-Ask the agent: `Use $loop-engineering to implement this task, verify the acceptance criteria, and record the result.` Claude Code users can invoke the installed `loop-engineering` skill using their environment's skill mechanism.
+Ask the agent: `Use $dasi-loop to implement this task, verify the acceptance criteria, and record the result.` Claude Code users can invoke the installed `dasi-loop` skill using their environment's skill mechanism.
 
-The agent chooses task-specific verification and records a bounded loop. The optional helper saves records to `~/.loop-engineering/runs`, outside the target project. It records supplied information; it is not an autonomous scheduler, command runner, policy enforcer, or independent verifier. A session interruption requires a user or agent to resume using the saved record. No model, API key, or background service is bundled.
+The agent chooses task-specific verification and records a bounded loop. The optional helper saves records to `~/.dasi-loop/runs`, outside the target project. It records supplied information; it is not an autonomous scheduler, command runner, policy enforcer, or independent verifier. A session interruption requires a user or agent to resume using the saved record. No model, API key, or background service is bundled.
 
 ## Development
 

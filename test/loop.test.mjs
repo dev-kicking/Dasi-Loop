@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const installer = join(root, 'bin', 'install.mjs');
-const helper = join(root, 'skills', 'loop-engineering', 'scripts', 'record.mjs');
+const helper = join(root, 'skills', 'dasi-loop', 'scripts', 'record.mjs');
 const run = (script, args, cwd) => spawnSync(process.execPath, [script, ...args], { cwd, encoding: 'utf8' });
 
 test('project installations are usable and do not overwrite existing skills', () => {
@@ -17,9 +17,9 @@ test('project installations are usable and do not overwrite existing skills', ()
     for (const [agent, directory] of [['codex', '.agents'], ['claude', '.claude']]) {
       const args = ['install', '--agent', agent, '--scope', 'project'];
       assert.equal(run(installer, args, temp).status, 0);
-      const skill = join(temp, directory, 'skills', 'loop-engineering', 'SKILL.md');
+      const skill = join(temp, directory, 'skills', 'dasi-loop', 'SKILL.md');
       assert.ok(existsSync(skill));
-      assert.ok(existsSync(join(temp, directory, 'skills', 'loop-engineering', 'scripts', 'record.mjs')));
+      assert.ok(existsSync(join(temp, directory, 'skills', 'dasi-loop', 'scripts', 'record.mjs')));
       const original = readFileSync(skill, 'utf8');
       assert.notEqual(run(installer, args, temp).status, 0);
       assert.equal(readFileSync(skill, 'utf8'), original);

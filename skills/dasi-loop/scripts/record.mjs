@@ -26,7 +26,7 @@ try {
     if (!options['--input']) throw new Error(usage);
     const task = readJson(options['--input']);
     if (!nonempty(task.goal) || !nonempty(task.workspace) || !Array.isArray(task.criteria) || !task.criteria.length || !task.criteria.every(nonempty)) throw new Error('Task requires goal, workspace, and a nonempty array of criteria.');
-    const root = resolve(options['--root'] ?? join(homedir(), '.loop-engineering', 'runs'));
+    const root = resolve(options['--root'] ?? join(homedir(), '.dasi-loop', 'runs'));
     mkdirSync(root, { recursive: true, mode: 0o700 });
     const run = join(root, randomUUID());
     mkdirSync(run, { mode: 0o700 });

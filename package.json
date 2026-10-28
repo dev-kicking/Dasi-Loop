@@ -1,10 +1,10 @@
 {
-  "name": "loop-engineering-skill",
+  "name": "dasi-loop",
   "version": "0.1.0",
   "description": "A portable, evidence-driven development loop skill",
   "license": "MIT",
   "type": "module",
-  "bin": { "loop-engineering-skill": "bin/install.mjs" },
+  "bin": { "dasi-loop": "bin/install.mjs" },
   "files": ["bin", "skills", "README.md", "LICENSE"],
   "scripts": { "test": "node --test test/*.test.mjs" },
   "engines": { "node": ">=18" }
