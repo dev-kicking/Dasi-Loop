@@ -12,7 +12,7 @@ loop-engineering-skill install --agent codex
 # or: loop-engineering-skill install --agent claude
 ```
 
-The repository is private. With GitHub access configured, clone it first:
+To install from the GitHub repository, clone it first:
 
 ```sh
 git clone https://github.com/dev-kicking/loop-engineering-skill.git
