@@ -9,7 +9,7 @@ Use the same skill in personal and team projects. The agent follows each project
 Node.js 18+ is required for the installer and helper.
 
 ```sh
-npm install --global git+https://github.com/dev-kicking/loop-engineering-skill.git
+npm install --global git+https://github.com/dev-kicking/Dasi-Loop.git
 dasi-loop install --agent codex
 # Claude Code: dasi-loop install --agent claude
 ```
