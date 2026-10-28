@@ -1,7 +1,7 @@
 {
   "name": "dasi-loop",
-  "version": "0.2.0",
-  "description": "A portable, evidence-driven development loop skill",
+  "version": "0.3.0",
+  "description": "A scored implement, independently evaluate, and improve loop skill",
   "license": "MIT",
   "type": "module",
   "bin": {

@@ -1,32 +1,55 @@
-# Record helper, version 2
+# Record helper, version 3
 
-Run `node <skill-directory>/scripts/record.mjs ...`. Inputs are JSON files created with file tools; do not interpolate task text or credentials into shell commands. The helper only records and validates supplied evidence. Verification commands are run by the agent separately.
+Run `node <skill-directory>/scripts/record.mjs ...`. Input JSON files are agent-created task records, not project-root configuration. Avoid shell-interpolated task text and credentials. Records default to `~/.dasi-loop/runs`; `start --root <directory>` changes the root. The helper requires storage outside the workspace directory. Prefer a location outside its entire Git repository as well, to avoid mixing execution records into project history.
 
-## Start
+## 1. Start with a fixed rubric
 
 ```sh
 node <helper> start --input /tmp/task.json
 ```
 
-The command prints an absolute run directory under `~/.dasi-loop/runs`. `--root <directory>` changes the storage root; keep it outside the workspace, including any Git repository containing it, so the journal does not invalidate its own snapshot. No project-root config is created.
+The command prints the run directory. Example contract:
 
 ```json
 {
-  "goal": "Reject empty usernames without breaking valid logins",
-  "workspace": "/absolute/path/to/project",
-  "scope": ["login validation", "regression tests"],
-  "criteria": [
-    {"id": "AC-1", "description": "Empty usernames return a validation error"},
-    {"id": "AC-2", "description": "Valid usernames retain existing behavior"},
-    {"id": "AC-3", "description": "Error styling reviewed on a device", "required": false}
+  "goal":"Reject empty usernames and preserve valid logins",
+  "workspace":"/absolute/project/path",
+  "scope":["username validation", "regression coverage"],
+  "criteria":[
+    {"id":"AC-1","description":"node regression.cjs passes empty and valid username assertions"}
   ],
-  "limits": {"attempts": 3, "minutes": 45}
+  "rubric":{
+    "target":85,
+    "plateau_rounds":2,
+    "min_delta":1,
+    "dimensions":[
+      {
+        "id":"behavior",
+        "description":"Independently observed username validation behavior",
+        "criteria":["AC-1"],
+        "weight":100,
+        "anchors":{
+          "0":"Validation is absent or cannot be assessed",
+          "1":"Implementation exists but required runtime checks fail",
+          "2":"Only empty or only valid username behavior works",
+          "3":"Both cases look correct but independent runtime evidence is missing",
+          "4":"Both assertions pass when independently executed"
+        }
+      }
+    ]
+  },
+  "reviewer":{"kind":"codex","timeout_seconds":300},
+  "limits":{"attempts":3,"minutes":45}
 }
 ```
 
-Criterion IDs must be unique, at least one criterion must be required, and `required` defaults to true. String criteria are accepted and assigned IDs `AC-1`, `AC-2`, etc. `attempts` is a positive integer; `minutes` is a positive number. Defaults are 3 and 45, measured from run creation, including time away from the session. Optional context fields such as `scope`, `previous_run`, and `base_revision` are preserved, not enforced.
+Multiple dimensions enable separate functional correctness, failure handling, regression coverage or task-specific quality scores; choose concrete anchors rather than copying a universal scoring template. Weights must be positive and sum to 100. Dimension IDs must be unique and link known criterion IDs. Every required criterion must be covered. Ratings are integers 0–4. `total = Σ(weight × rating / 4)`, rounded to two decimals. A high total never overrides required failures.
 
-## Record a verification round
+Criteria need unique IDs and descriptions; `required` defaults to true and at least one is required. Optional criteria still need a check each round. Strings are accepted as criteria with generated IDs `AC-1`, etc. `attempts` is a positive integer; `minutes` is in (0,525600]. Defaults are 3/45. Time includes pauses and evaluation. Reviewer defaults to `codex` with a 300-second invocation timeout, also capped by remaining run time. See [evaluation.md](evaluation.md) for custom reviewers and execution boundaries.
+
+The helper stores a contract digest and rejects accidental task/rubric/reviewer changes. This is not tamper-resistant storage: a process with write access to records can alter them. To change the contract deliberately, start a new run with `previous_run` pointing to the earlier run, respecting the user's scope and budget.
+
+## 2. Record implementer observations
 
 ```sh
 node <helper> add --run /path/to/run --input /tmp/attempt.json
@@ -34,54 +57,68 @@ node <helper> add --run /path/to/run --input /tmp/attempt.json
 
 ```json
 {
-  "summary": "Added empty-username validation and checked existing valid inputs",
-  "checks": [
-    {"criterion": "AC-1", "status": "passed", "method": "command", "command": "npm test -- login", "exit_code": 0, "evidence": "Empty-username test passed; output reviewed"},
-    {"criterion": "AC-2", "status": "passed", "method": "command", "command": "npm test -- login", "exit_code": 0, "evidence": "Existing valid-input tests passed"},
-    {"criterion": "AC-3", "status": "unverified", "evidence": "Device unavailable; optional styling check deferred"}
-  ]
+  "summary":"Added blank-username validation",
+  "checks":[
+    {"criterion":"AC-1","status":"passed","method":"command","command":"node regression.cjs","exit_code":0,"evidence":"Development tests passed"}
+  ],
+  "diagnosis":"Original validation accepted empty input",
+  "next_action":"Independent evaluator should rerun the regression checks"
 }
 ```
 
-Each round must contain exactly one check per criterion, including optional criteria. Status is `passed`, `failed`, or `unverified`. Every check needs nonempty `evidence`. Verified checks require a `method`:
+Every criterion needs exactly one check. Status is `passed`, `failed`, or `unverified`; each needs evidence or the reason it is unavailable. Verified checks require `command`, `inspection`, or `human` as method. Command checks need command text and integer `exit_code`; passing requires 0. Human checks need an actual `confirmed_by`. These observations never count as independent approval. `add` rejects reviewer scores and review objects.
 
-- `command`: include the actual `command` and integer `exit_code`; a passed check requires exit code 0. An exit code alone does not prove the criterion; describe the relevant observed result.
-- `inspection`: describe what was inspected and the observed behavior. Do not use this to substitute for a test that was required by the task.
-- `human`: include `confirmed_by` and the actual confirmation. The helper cannot authenticate it.
+Each new round consumes an attempt. The helper refuses rounds after attempt/time limits or a configured score plateau. It cannot stop agent work done outside the helper.
 
-Additional details such as `diagnosis`, `next_action`, and evidence file paths may be included in the round. Do not save secrets or raw sensitive output. A new round replaces the previous round for completion purposes. The helper refuses records beyond the attempt or time limit; it cannot interrupt the agent or a running command. A final passing round recorded within the budget can be closed after the deadline.
+## 3. Independently evaluate
 
-## Inspect or resume
+```sh
+node <helper> evaluate --run /path/to/run
+```
+
+The runner invokes the selected evaluator in a separate process. No `--input` review import is supported. The response is bound to a fresh request ID and the current contract; the helper validates checks and computes weighted scores. It stores the independent checks, dimension feedback, score, invocation provenance, timestamp and Git snapshot. An implementer cannot approve a task by supplying self-reported checks to `finish`.
+
+If the Git workspace differs from the last `add`, record a fresh round first. If it changes during evaluation, no assessment is accepted. Once an assessment is recorded, evaluating that same round again is rejected, even if its score is low. Submitting any already-assessed Git fingerprint as a new candidate is also rejected. Fix the work and start a changed round. External verification-context changes without code changes require a new explicitly authorized run; non-Git projects rely on the agent to establish that a correction occurred. A transient evaluator failure can be retried within the remaining time budget, with no invented score.
+
+## 4. Inspect scores and resume
 
 ```sh
 node <helper> status --run /path/to/run
 node <helper> resume --run /path/to/run
 ```
 
-Both commands print the task, attempts, result, remaining budget, `unverified_required`, and `evidence_current` without modifying state or launching an agent. `evidence_current` is true/false when a previous round and current Git snapshot are available, otherwise null.
+Both are read-only and print:
 
-The Git snapshot hashes HEAD plus tracked and untracked non-ignored files in the workspace, including deleted files and symlink targets (without following symlinks). It does not cover ignored files, submodule contents, dependencies outside the workspace, environment variables, or external services. It also does not prove tests ran on the recorded snapshot: the agent must run checks before `add` and avoid intervening changes. When Git is unavailable, review the current workspace manually before completing.
+- Task, rounds, accepted independent assessments, errors and result.
+- Remaining budget and required criteria not passed by the latest independent assessment.
+- `evidence_current`: whether the latest accepted review matches current Git content (otherwise null if unavailable).
+- `scoring.history`: totals, deltas from the preceding evaluated round, and per-dimension point deltas.
+- `scoring.best_score`, `best_attempt`, `regression`, and `plateau`.
 
-## Finish
+Only accepted assessments appear in history. Initial delta is null. Regression means the latest total decreased. Plateau means the best score across the last `plateau_rounds` evaluations improved by less than `min_delta` points compared with the best score before that window. At least one earlier evaluation is required. Defaults: 2 rounds/1 point. A plateau stops further `add` calls; record a human review/strategy action. Best score is informational; completion always uses the latest assessment, and code is never automatically rolled back.
+
+Git snapshots hash HEAD and tracked/untracked non-ignored files under the workspace, including deletions and symlink targets without following symlinks. They exclude ignored files, submodule contents, external dependencies/services and environment variables. They cannot prove a grader actually ran the claimed command. Non-Git projects require explicit review of current state.
+
+## 5. Finish
 
 ```sh
 node <helper> finish --run /path/to/run --input /tmp/result.json
 ```
 
 ```json
-{"status": "completed", "summary": "AC-1 and AC-2 passed the login regression tests; optional styling check deferred"}
+{"status":"completed","summary":"Independent regression tests passed; score 100/100"}
 ```
 
-`completed` requires all required checks in the latest round to pass and its Git snapshot to match. For non-Git workspaces, additionally supply `"workspace_reviewed": true` after reviewing the current state. A summary alone cannot mark a run complete.
+Completion requires the latest independent review, all required criteria passed, no `must_fix` blockers, total at least the fixed target, and current evidence. A non-Git workspace additionally needs `"workspace_reviewed": true`. A passing assessment recorded within budget may be closed after the deadline.
 
-Other valid statuses are `needs_review`, `blocked`, `budget_exhausted`, and `cancelled`. Each requires `summary` and `next_action` (`"none"` is allowed for cancellation):
+Other outcomes are `needs_review`, `blocked`, `budget_exhausted`, and `cancelled`. Each needs a summary and specific `next_action` (`"none"` is allowed for cancellation):
 
 ```json
-{"status": "blocked", "summary": "Cannot access required test service", "next_action": "Restore the service and start a new run referencing this one"}
+{"status":"needs_review","summary":"Evaluator unavailable or score plateau reached","next_action":"Restore the evaluator or review the failing strategy before a new run"}
 ```
 
 ## Storage and compatibility
 
-A run stores one `state.json` with schema version 2, written by atomic replacement under a per-run writer lock. Status reads see either the old or new complete state. Failed input validation leaves state unchanged. Finished runs cannot be changed through this helper. If a process crashes while holding `.lock`, confirm it has stopped before removing that lock manually.
+The helper atomically replaces `state.json` under a per-run writer lock. Reads see a complete old/new state; validation failures do not approve work. Evaluation failures update only diagnostic metadata, never a score. If a process crashes holding `.lock`, confirm it is stopped before removing the lock. Finished runs cannot be modified through the helper.
 
-Version 0.1 used `task.json`, `attempts.jsonl`, and `result.json` with unstructured evidence. Those files remain untouched; inspect them manually and start a version-2 run with `previous_run` rather than treating their summaries as verified checks. Files are local and may include project details; use storage and retention rules appropriate to the environment.
+Version-2 (0.2) state can be inspected with `status`/`resume` but is read-only; start a v3 run with rubric/reviewer and `previous_run`. Version-1 (0.1) `task.json`, `attempts.jsonl`, and `result.json` remain untouched and can be inspected manually. Old self-assessments are never imported as independent evidence. Do not store secrets in goals, argv or evidence; use existing authentication/environment mechanisms and appropriate retention policies.
