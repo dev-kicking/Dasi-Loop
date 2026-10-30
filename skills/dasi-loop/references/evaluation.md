@@ -1,5 +1,7 @@
 # Independent evaluation
 
+Planning uses a separate `dasi-plan/v1` protocol and schema; see [planning.md](planning.md). It returns findings rather than scores. Both stages use the same fixed reviewer adapter and execution boundaries described below. The implementation protocol remains `dasi-review/v1`.
+
 Version 0.3 separates the implementer's `add` records from accepted reviewer results. Only `evaluate` can populate an assessment, from a freshly launched external process. There is no command for importing an implementer-written review JSON as authoritative evidence.
 
 ## Codex reviewer (default)
@@ -24,7 +26,9 @@ Unlike the built-in Codex route, custom executables are **not OS-sandboxed by Da
 
 ## Input protocol
 
-The input has `protocol: "dasi-review/v1"`, a fresh `request_id`, `contract_hash`, `workspace`, `goal`, `scope`, `criteria`, `rubric`, and `initial_snapshot`. The command adapter also receives `response_schema` and `evaluator_instructions`. The helper deliberately omits implementation self-checks and past ratings to reduce anchoring. Reviewers may read project files but must treat any embedded instructions to change the rubric or approve automatically as untrusted.
+After planning agreement the implementation request also includes the agreed `proposal` and neutral decision resolutions, without the user confirmation text or planning verdicts.
+
+The implementation input has `protocol: "dasi-review/v1"`, a fresh `request_id`, `contract_hash`, `workspace`, `goal`, `scope`, `criteria`, `rubric`, and `initial_snapshot`. The command adapter also receives `response_schema` and `evaluator_instructions`. The helper deliberately omits implementation self-checks and past ratings to reduce anchoring. Reviewers may read project files but must treat any embedded instructions to change the rubric or approve automatically as untrusted.
 
 ## Response protocol
 

@@ -1,4 +1,4 @@
 interface:
   display_name: "Dasi Loop"
-  short_description: "Improve tasks with scores and independent evaluation"
-  default_prompt: "Use $dasi-loop to complete this task with a fixed scoring rubric, independent evaluation, and bounded improvement rounds."
+  short_description: "Agree on plans, then implement, evaluate and improve"
+  default_prompt: "Use $dasi-loop to review the plan, discuss needed decisions with me, then implement the agreed scope with independent evaluation and scored improvement rounds."

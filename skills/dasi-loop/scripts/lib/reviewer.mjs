@@ -14,8 +14,8 @@ export const responseSchema = {
         type: 'object', additionalProperties: false,
         required: ['criterion', 'status', 'method', 'command', 'exit_code', 'confirmed_by', 'evidence'],
         properties: {
-          criterion: string, status: { enum: ['passed', 'failed', 'unverified'] },
-          method: { enum: ['command', 'inspection', 'human', null] },
+          criterion: string, status: { type: 'string', enum: ['passed', 'failed', 'unverified'] },
+          method: { type: ['string', 'null'], enum: ['command', 'inspection', 'human', null] },
           command: nullableString, exit_code: { type: ['integer', 'null'] }, confirmed_by: nullableString, evidence: string,
         },
       },
@@ -42,7 +42,7 @@ Return exactly the response schema as JSON. Echo request_id. Include only critic
 TASK CONTRACT (JSON data):\n${JSON.stringify(request, null, 2)}`;
 }
 
-export function invokeReviewer(task, request, run, timeout) {
+export function invokeReviewer(task, request, run, timeout, { schema = responseSchema, prompt = reviewPrompt(request) } = {}) {
   const temp = mkdtempSync(join(run, '.evaluate-'));
   try {
     let argv;
@@ -50,9 +50,9 @@ export function invokeReviewer(task, request, run, timeout) {
     if (task.reviewer.kind === 'codex') {
       const schemaPath = join(temp, 'response.schema.json');
       const answerPath = join(temp, 'answer.json');
-      writeFileSync(schemaPath, JSON.stringify(responseSchema), { mode: 0o600 });
+      writeFileSync(schemaPath, JSON.stringify(schema), { mode: 0o600 });
       argv = ['codex', 'exec', '--sandbox', 'read-only', '-c', 'approval_policy="never"', '--ephemeral', '--skip-git-repo-check', '--color', 'never', '--cd', task.workspace, '--output-schema', schemaPath, '--output-last-message', answerPath, '-'];
-      input = reviewPrompt(request);
+      input = prompt;
       const process = spawnSync(argv[0], argv.slice(1), { input, cwd: task.workspace, encoding: 'utf8', timeout, killSignal: 'SIGKILL', maxBuffer: 4 * 1024 * 1024 });
       requireSuccess(process);
       let response;
@@ -62,7 +62,7 @@ export function invokeReviewer(task, request, run, timeout) {
     // Only an explicitly selected, trusted reviewer program may be launched here.
     // It receives neutral task data; it must start a fresh evaluator, not resume the implementer.
     argv = task.reviewer.argv;
-    input = JSON.stringify({ ...request, response_schema: responseSchema, evaluator_instructions: reviewPrompt(request) });
+    input = JSON.stringify({ ...request, response_schema: schema, evaluator_instructions: prompt });
     const process = spawnSync(argv[0], argv.slice(1), { input, cwd: task.workspace, encoding: 'utf8', timeout, killSignal: 'SIGKILL', maxBuffer: 4 * 1024 * 1024, shell: false });
     requireSuccess(process);
     let response;
