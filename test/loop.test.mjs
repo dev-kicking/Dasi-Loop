@@ -40,6 +40,7 @@ const scores = config.scores ?? request.rubric.dimensions.map(item => ({ dimensi
 process.stdout.write(JSON.stringify({ request_id: config.wrong_id ? 'wrong' : request.request_id, summary: 'Independent assessment', checks, scores, must_fix: config.must_fix ?? [], total: 999 }));
 `);
   const task = {
+    kind: 'fix', impact_review: 'Restore invalid-input rejection without changing valid-input behavior; rerun regression checks.',
     goal: 'Fix invalid-input handling', workspace,
     criteria: [{ id: 'AC-1', description: 'Invalid input returns an error' }],
     reviewer: { kind: 'command', argv: [process.execPath, reviewer, assessment] },
@@ -195,6 +196,17 @@ test('evaluator workspace mutations are detected and never approved', t => {
   f.configure({ mutate: true });
   rejected(f.invoke('evaluate', null, dir), /changed during evaluation/);
   assert.equal(f.state(dir).attempts[0].review, null);
+});
+
+test('losing Git after verification cannot fall back to self-reported workspace review', t => {
+  const f = fixture(t);
+  const dir = f.start();
+  ok(f.invoke('add', attempt(), dir));
+  ok(f.invoke('evaluate', null, dir));
+  rmSync(join(f.workspace, '.git'), { recursive: true });
+  writeFileSync(join(f.workspace, 'changed.js'), 'changed after independent review');
+  rejected(f.invoke('finish', { ...completed, workspace_reviewed: true }, dir), /Git snapshot became unavailable/);
+  assert.equal(f.state(dir).result, null);
 });
 
 test('reviewer crashes, invalid JSON and mismatched request IDs leave no passing assessment', t => {
