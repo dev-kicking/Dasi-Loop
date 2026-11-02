@@ -2,16 +2,18 @@
 
 Run `node <skill-directory>/scripts/record.mjs ...`. Input JSON files are agent-created task records, not project-root configuration. Avoid shell-interpolated task text and credentials. Records default to `~/.dasi-loop/runs`; `start --root <directory>` changes the root. The helper requires storage outside the workspace directory. Prefer a location outside its entire Git repository as well, to avoid mixing execution records into project history.
 
-## 1. Start with a fixed rubric
+## 1. Start with a task contract
 
 ```sh
 node <helper> start --input /tmp/task.json
 ```
 
-The command prints the run directory. Example contract:
+The command prints the run directory. Full planning tasks (`feature`, `change`, `plan`) first follow [planning.md](planning.md), using provisional criteria and rubric plus the original `request` and `proposal`. `feature` is the default. The following example is a bounded bug fix whose contract is fixed immediately:
 
 ```json
 {
+  "kind":"fix",
+  "impact_review":"Restore blank-username rejection while preserving valid logins; rerun the input regression checks",
   "goal":"Reject empty usernames and preserve valid logins",
   "workspace":"/absolute/project/path",
   "scope":["username validation", "regression coverage"],
@@ -45,9 +47,9 @@ The command prints the run directory. Example contract:
 
 Multiple dimensions enable separate functional correctness, failure handling, regression coverage or task-specific quality scores; choose concrete anchors rather than copying a universal scoring template. Weights must be positive and sum to 100. Dimension IDs must be unique and link known criterion IDs. Every required criterion must be covered. Ratings are integers 0–4. `total = Σ(weight × rating / 4)`, rounded to two decimals. A high total never overrides required failures.
 
-Criteria need unique IDs and descriptions; `required` defaults to true and at least one is required. Optional criteria still need a check each round. Strings are accepted as criteria with generated IDs `AC-1`, etc. `attempts` is a positive integer; `minutes` is in (0,525600]. Defaults are 3/45. Time includes pauses and evaluation. Reviewer defaults to `codex` with a 300-second invocation timeout, also capped by remaining run time. See [evaluation.md](evaluation.md) for custom reviewers and execution boundaries.
+Criteria need unique IDs and descriptions; `required` defaults to true and at least one is required. Optional criteria still need a check each round. Strings are accepted as criteria with generated IDs `AC-1`, etc. `attempts` is a positive integer; `minutes` is in (0,525600]. Defaults are 3/45. Implementation time includes pauses and evaluation after agreement (or start for lightweight tasks). Planning discussion does not spend implementation time; its separately limited review calls use invocation timeouts. Reviewer defaults to `codex` with a 300-second invocation timeout, also capped by remaining run time. See [evaluation.md](evaluation.md) for custom reviewers and execution boundaries.
 
-The helper stores a contract digest and rejects accidental task/rubric/reviewer changes. This is not tamper-resistant storage: a process with write access to records can alter them. To change the contract deliberately, start a new run with `previous_run` pointing to the earlier run, respecting the user's scope and budget.
+The helper stores a contract digest and rejects accidental changes. During planning, only `revise-plan` can change the draft; after agreement (or start for lightweight work), the implementation task/rubric/reviewer are fixed. This is not tamper-resistant storage: a process with write access to records can alter them. To change the contract deliberately, start a new run with `previous_run` pointing to the earlier run, respecting the user's scope and budget.
 
 ## 2. Record implementer observations
 
@@ -87,7 +89,7 @@ node <helper> status --run /path/to/run
 node <helper> resume --run /path/to/run
 ```
 
-Both are read-only and print:
+Both are read-only and print the stage, planning drafts/reviews/agreement when present, and:
 
 - Task, rounds, accepted independent assessments, errors and result.
 - Remaining budget and required criteria not passed by the latest independent assessment.
@@ -109,7 +111,9 @@ node <helper> finish --run /path/to/run --input /tmp/result.json
 {"status":"completed","summary":"Independent regression tests passed; score 100/100"}
 ```
 
-Completion requires the latest independent review, all required criteria passed, no `must_fix` blockers, total at least the fixed target, and current evidence. A non-Git workspace additionally needs `"workspace_reviewed": true`. A passing assessment recorded within budget may be closed after the deadline.
+For implementation tasks, completion requires the latest independent review, all required criteria passed, no `must_fix` blockers, total at least the fixed target, and current evidence. A non-Git workspace additionally needs `"workspace_reviewed": true`. A passing assessment recorded within budget may be closed after the deadline.
+
+A planning-only `kind: "plan"` run completes after independent planning review and user agreement, without implementation attempts or scores. Implementation commands are rejected for planning-only runs. Changes to the Git context after agreement invalidate planning-only completion.
 
 Other outcomes are `needs_review`, `blocked`, `budget_exhausted`, and `cancelled`. Each needs a summary and specific `next_action` (`"none"` is allowed for cancellation):
 
