@@ -1,6 +1,6 @@
 {
   "name": "dasi-loop",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "description": "A scored implement, independently evaluate, and improve loop skill",
   "license": "MIT",
   "type": "module",
@@ -14,7 +14,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "postinstall": "node bin/postinstall.mjs"
   },
   "engines": {
     "node": ">=18"
