@@ -1,6 +1,6 @@
 # Dasi Loop: PRD 문서 보존과 업데이트 안내
 
-Status: agreed scope — revision 3, 2026-11-03
+Status: released — revision 4, 2026-11-03
 
 ## 문제와 사용자 의도
 
@@ -46,7 +46,10 @@ Status: agreed scope — revision 3, 2026-11-03
 - 실제 Codex의 임시 연락처 프로젝트에서 PRD 파일 생성, 선택지·추천 이유가 포함된 질문 3개, 사용자 합의 전 구현 중단을 확인했다. 세션 내부의 독립 리뷰어 호출은 환경 실행 오류로 실패해 needs_review로 저장됐다. 완전한 실제 모델 구현·평가 루프까지 검증했다고 주장하지 않는다.
 - 사용자 공용 스킬은 기존 공개 버전 0.4.0으로 갱신돼 있다. 이번 소스 수정은 아직 공용 스킬에 설치되지 않았다.
 - 릴리스 tarball의 실제 전역 설치에서 Codex/Claude 공용 스킬 동기화, 사용자 수정 백업, 프로젝트 설치본 보존, 수동 프로젝트 갱신, 스크립트 차단 시 건너뛰기, 로컬 dependency 설치 시 사용자 스킬 미변경을 확인했다. npm bin의 --version도 0.5.0이다.
-- 새 버전 알림 코드와 종료 후 최종 답변 전달 지침을 구현했다. 설치 메타데이터에 agent/scope를 기록하고, 구버전은 검증 가능한 경로에서만 범위를 추론한다. 릴리스 검증 중이며 배포 결과는 확인 후 기록한다.
+- 새 버전 알림 코드와 종료 후 최종 답변 전달 지침을 구현했다. 설치 메타데이터에 agent/scope를 기록하고, 구버전은 검증 가능한 경로에서만 범위를 추론한다. npm 0.5.0 게시와 latest 태그 반영을 확인했다.
 - 앞선 알림 계획 검토 기록: `/private/tmp/dasi-loop-runs/a2278bf4-fc61-48dc-a38c-0fedd3ed4947/state.json` (`needs_review`). 임시 경로이므로 이 PRD에 제품 요구사항과 남은 결정을 보존한다.
 
 - 릴리스 검증: 네트워크를 모의한 테스트 38개 통과. 실제 CLI는 승인된 최종 결과 저장·잠금 해제 후에만 알림을 조회한다. 새 버전·동일/이전 버전·SemVer 사전판·잘못된 응답·연결 실패·본문 지연·메타데이터 누락·프로젝트 범위 명령을 확인했다. 정적 스킬 검증과 diff 검사 통과. 테스트는 실제 사용자 효과를 보장하지 않는다.
+
+- 공개 패키지 확인: 임시 환경에 npm 0.4.0과 양쪽 공용 스킬을 설치한 뒤, `npm update -g dasi-loop --allow-scripts=dasi-loop`로 패키지와 Codex/Claude 스킬이 0.5.0으로 함께 갱신되고 0.4.0이 백업됨을 확인했다. 새 검사기가 이전 버전 메타데이터를 읽을 때 실제 public npm 0.5.0을 안내하고 최신 설치에는 알림이 없는 것도 확인했다. 이전 0.4.0 검사기에 알림이 소급 적용되는 것은 아니므로 사용자는 최초 1회 갱신해야 한다.
+- 릴리스: [npm 0.5.0](https://www.npmjs.com/package/dasi-loop/v/0.5.0) · [GitHub v0.5.0](https://github.com/dev-kicking/Dasi-Loop/releases/tag/v0.5.0) · [PR #2](https://github.com/dev-kicking/Dasi-Loop/pull/2). 소스·PR·태그·릴리스 작업은 dev-kicking, npm 배포 계정은 devkicking이다.
