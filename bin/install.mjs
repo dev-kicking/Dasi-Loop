@@ -40,7 +40,7 @@ try {
     staging = mkdtempSync(join(base, folder, '.dasi-loop-update-'));
     const candidate = join(staging, 'dasi-loop');
     cpSync(source, candidate, { recursive: true, errorOnExist: true, force: false, verbatimSymlinks: true });
-    writeFileSync(join(candidate, '.dasi-loop-install.json'), JSON.stringify({ version, installed_at: new Date().toISOString() }) + '\n');
+    writeFileSync(join(candidate, '.dasi-loop-install.json'), JSON.stringify({ version, agent, scope, installed_at: new Date().toISOString() }) + '\n');
     let backup;
     if (command === 'update') {
       const backupRoot = join(base, folder, 'dasi-loop-backups');

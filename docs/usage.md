@@ -37,6 +37,10 @@ To update manually, or if npm skipped the postinstall script, use `dasi-loop upd
 
 Before replacing an installed skill, `update` backs up its entire directory, including local edits and extra files. It prints the backup path under `dasi-loop-backups`, beside the `skills` directory (outside skill discovery). Local edits remain in the backup for you to reapply. Installations from 0.3.0 without version metadata are supported. Updating a missing skill fails with instructions to install it first. Start a new agent session after updating.
 
+## Version notices
+
+After an accepted final result is saved, the helper checks public npm latest with a two-second deadline. Newer versions produce update instructions; missing installed-version metadata is labeled unknown without asserting an upgrade. Network/response failures are silent and cannot fail finalization. The skill relays any notice in the final user response. No background checking or automatic installation is performed by this lookup.
+
 ## Use
 
 Invoke `$dasi-loop` in Codex, or `/dasi-loop` in a Claude Code environment that supports skill commands. Include the task and constraints:

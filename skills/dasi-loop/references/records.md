@@ -121,6 +121,10 @@ Other outcomes are `needs_review`, `blocked`, `budget_exhausted`, and `cancelled
 {"status":"needs_review","summary":"Evaluator unavailable or score plateau reached","next_action":"Restore the evaluator or review the failing strategy before a new run"}
 ```
 
+## End-of-run version notice
+
+After a successful `finish` writes the result and releases its lock, the helper checks public npm latest with a two-second deadline. It prints a notice only for a newer valid version, or a clearly labeled unknown installed version. Scope-specific commands use install metadata or a validated user/project path. Lookup failures are silent; no update is installed, no result is changed, and other commands do not query the registry. Relay notices in the final user response, translating prose but preserving commands.
+
 ## Storage and compatibility
 
 The helper atomically replaces `state.json` under a per-run writer lock. Reads see a complete old/new state; validation failures do not approve work. Evaluation failures update only diagnostic metadata, never a score. If a process crashes holding `.lock`, confirm it is stopped before removing the lock. Finished runs cannot be modified through the helper.

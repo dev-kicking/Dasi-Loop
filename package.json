@@ -11,10 +11,13 @@
     "bin",
     "skills",
     "README.md",
+    "README.en.md",
+    "docs/readme",
+    "docs/usage.md",
     "LICENSE"
   ],
   "scripts": {
-    "test": "node --test test/*.test.mjs",
+    "test": "node --require ./test/offline.cjs --test test/*.test.mjs",
     "postinstall": "node bin/postinstall.mjs"
   },
   "engines": {

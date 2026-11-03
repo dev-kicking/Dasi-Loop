@@ -7,6 +7,7 @@ import { budget, digest, loadState, nonempty, normalizeTask, now, readJson, snap
 import { scoreReview, scoreTrend } from './lib/scoring.mjs';
 import { invokeReviewer } from './lib/reviewer.mjs';
 import { agreePlan, implementationReady, reviewPlan, revisePlan } from './lib/planning.mjs';
+import { updateNotice } from './lib/update-notice.mjs';
 
 const usage = 'Usage: record.mjs start --input FILE [--root DIR] | revise-plan|agree-plan|add|finish --run DIR --input FILE | review-plan|evaluate|status|resume --run DIR';
 const statuses = ['completed', 'needs_review', 'blocked', 'budget_exhausted', 'cancelled'];
@@ -29,7 +30,7 @@ function view(state) {
     independent_review_pending: state.version === 3 && !last?.review,
   };
 }
-function main() {
+async function main() {
   const args = process.argv.slice(2);
   if (!args.length || args.includes('--help')) { console.log(usage); return; }
   const command = args.shift();
@@ -69,6 +70,7 @@ function main() {
   const lock = join(run, '.lock');
   try { writeFileSync(lock, String(process.pid), { flag: 'wx', mode: 0o600 }); }
   catch (error) { if (error.code === 'EEXIST') throw new Error('Run is locked by another writer. If it crashed, confirm no writer is active before removing .lock.'); throw error; }
+  let finishedWorkspace;
   try {
     const state = loadState(path);
     if (state.version !== 3) throw new Error('Version-2 runs are read-only. Start a v3 run with a fixed rubric and independent reviewer, referencing this run.');
@@ -126,7 +128,12 @@ function main() {
     }
     writeJson(path, state);
     console.log(`${command}: ${run}`);
+    if (command === 'finish') finishedWorkspace = state.task.workspace;
   } finally { unlinkSync(lock); }
+  if (finishedWorkspace) {
+    const notice = await updateNotice({ workspace: finishedWorkspace });
+    if (notice) console.log(notice);
+  }
 }
 function evaluate(state, run, path) {
   const attempt = state.attempts.at(-1);
@@ -167,4 +174,4 @@ function evaluate(state, run, path) {
     throw error;
   }
 }
-try { main(); } catch (error) { console.error(error.message); process.exitCode = 1; }
+main().catch(error => { console.error(error.message); process.exitCode = 1; });
