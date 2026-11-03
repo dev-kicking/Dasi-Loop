@@ -35,7 +35,7 @@ and improve within three rounds.
 ```
 
 > [!NOTE]
-> This README describes current `main`. Persistent PRD instructions and automatic user-skill sync are in the unpublished 0.5.0 source. To use them now, select the GitHub option below. End-of-run new-version notifications are not implemented yet.
+> Version 0.5.0 adds persistent PRD instructions, automatic user-skill sync, and end-of-run version notices. The lookup is bounded to two seconds; unavailable network checks are silently skipped after the result is saved.
 
 <details>
 <summary>Install scope and GitHub version</summary>
@@ -61,7 +61,7 @@ If the skill is already installed, replace the final `install` with `update`. Ex
 
 ## Updates
 
-Update the published npm package first, then sync the copied skill.
+Updating the npm package also syncs existing user-level skills when install scripts are allowed. The second command below is the manual fallback if npm skips the script.
 
 ```sh
 npm install --global dasi-loop@latest
@@ -71,7 +71,7 @@ dasi-loop update --agent codex
 Check the package version with `dasi-loop --version`. Previous skills, including local edits, are preserved in `dasi-loop-backups`. Start a new session after updating.
 
 <details>
-<summary>Automatic sync on current main</summary>
+<summary>Automatic sync in 0.5.0</summary>
 
 When install scripts are allowed, npm updates also sync existing user-level skills. Approve the script once in npm environments requiring approval:
 
@@ -93,7 +93,7 @@ After updating the npm package, update project skills from the project root with
 | Setup, scoring and limitations | [Full guide](docs/usage.md) |
 | Planning and user agreement | [Planning workflow](skills/dasi-loop/references/planning.md) · [Persistent PRD](skills/dasi-loop/references/prd.md) |
 | Independent evaluation and records | [Evaluator](skills/dasi-loop/references/evaluation.md) · [Record helper](skills/dasi-loop/references/records.md) |
-| Product requirements | [PRD (한국어)](docs/prd/dasi-loop-updates.md) |
+| Product requirements | [PRD (한국어)](https://github.com/dev-kicking/Dasi-Loop/blob/main/docs/prd/dasi-loop-updates.md) |
 | Translation and design conventions | [Add a language](docs/readme/TRANSLATING.md) · [Color and motion](docs/readme/STYLE.md) |
 
 <details>

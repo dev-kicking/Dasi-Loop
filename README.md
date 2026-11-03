@@ -34,7 +34,7 @@ $dasi-loop로 이 기능을 만들어줘. 먼저 PRD를 작성하고 나와 검�
 ```
 
 > [!NOTE]
-> 이 README는 현재 `main` 기준입니다. PRD 파일 작성 지침과 자동 스킬 동기화는 미배포 0.5.0 소스에 포함돼 있습니다. 지금 사용하려면 아래 GitHub 설치 옵션을 선택하세요. 종료 시 새 버전 알림은 아직 미구현입니다.
+> 0.5.0부터 PRD 파일 작성 지침, 사용자 공용 스킬 자동 동기화, 종료 시 새 버전 안내를 제공합니다. 버전 조회는 최대 2초이며, 네트워크를 사용할 수 없으면 작업 결과를 저장한 채 조용히 건너뜁니다.
 
 <details>
 <summary>설치 범위와 GitHub 버전</summary>
@@ -60,7 +60,7 @@ dasi-loop install --agent codex
 
 ## 업데이트
 
-공개 npm 패키지를 먼저 갱신한 뒤 복사된 스킬을 갱신합니다.
+공개 npm 패키지를 갱신하면, 설치 스크립트가 허용된 환경에서는 기존 사용자 공용 스킬도 함께 갱신됩니다. 아래 두 번째 명령은 스크립트가 차단됐을 때 수동으로 동기화하는 방법입니다.
 
 ```sh
 npm install --global dasi-loop@latest
@@ -70,7 +70,7 @@ dasi-loop update --agent codex
 `dasi-loop --version`으로 패키지 버전을 확인합니다. 이전 스킬과 사용자 수정은 `dasi-loop-backups`에 보존됩니다. 갱신 후 새 세션을 시작하세요.
 
 <details>
-<summary>현재 main의 자동 동기화</summary>
+<summary>0.5.0의 자동 동기화</summary>
 
 설치 스크립트 실행이 허용되면 npm 갱신 때 기존 사용자 공용 스킬도 동기화합니다. 스크립트 승인이 필요한 npm 환경에서는 한 번 허용하세요.
 
@@ -92,7 +92,7 @@ npm update -g dasi-loop
 | 설치·점수·제한의 상세 설명 | [사용 가이드 (English)](docs/usage.md) |
 | 기획·사용자 합의 | [기획 절차 (English)](skills/dasi-loop/references/planning.md) · [PRD 지침 (English)](skills/dasi-loop/references/prd.md) |
 | 독립 평가·실행 기록 | [평가기 (English)](skills/dasi-loop/references/evaluation.md) · [기록 도구 (English)](skills/dasi-loop/references/records.md) |
-| 현재 제품 요구사항 | [PRD](docs/prd/dasi-loop-updates.md) |
+| 현재 제품 요구사항 | [PRD](https://github.com/dev-kicking/Dasi-Loop/blob/main/docs/prd/dasi-loop-updates.md) |
 | 번역 추가·디자인 규칙 | [언어 추가 안내](docs/readme/TRANSLATING.md) · [컬러와 모션](docs/readme/STYLE.md) |
 
 <details>
